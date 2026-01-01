@@ -28,16 +28,10 @@ export async function convertPdfToImage(
   file: File
 ): Promise<PdfConversionResult> {
   try {
-    console.log('[PDF] Starting conversion for:', file.name, 'size:', file.size);
     const lib = await loadPdfJs();
-    console.log('[PDF] Library loaded');
-
     const arrayBuffer = await file.arrayBuffer();
-    console.log('[PDF] File read, size:', arrayBuffer.byteLength);
     const pdf = await lib.getDocument({ data: arrayBuffer }).promise;
-    console.log('[PDF] Document loaded, pages:', pdf.numPages);
     const page = await pdf.getPage(1);
-    console.log('[PDF] Page 1 retrieved');
 
     const viewport = page.getViewport({ scale: 4 });
     const canvas = document.createElement("canvas");
@@ -77,10 +71,9 @@ export async function convertPdfToImage(
         },
         "image/png",
         1.0
-      ); // Set quality to maximum (1.0)
+      );
     });
   } catch (err) {
-    console.error('[PDF] Conversion failed:', err);
     return {
       imageUrl: "",
       file: null,

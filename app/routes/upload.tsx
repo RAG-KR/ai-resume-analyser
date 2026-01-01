@@ -71,9 +71,6 @@ const upload = () => {
                 return setStatusText('Failed to analyze resume. Please try again.')
             }
 
-            console.log('Raw AI Response:', feedback)
-
-            // Handle different response formats
             let feedbackText = ''
             if (typeof feedback.message.content === 'string') {
                 feedbackText = feedback.message.content
@@ -83,43 +80,31 @@ const upload = () => {
             }
             
             if (!feedbackText) {
-                console.error('Invalid feedback format:', feedback)
                 setIsProcessing(false)
                 return setStatusText('Invalid AI response format. Please try again.')
             }
 
-            // Remove markdown code blocks if present
             feedbackText = feedbackText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-            
-            console.log('Cleaned feedback text:', feedbackText)
 
-            // Parse and validate JSON
             let parsedFeedback
             try {
                 parsedFeedback = JSON.parse(feedbackText)
             } catch (parseError) {
-                console.error('JSON parse error:', parseError, 'Text:', feedbackText)
                 setIsProcessing(false)
                 return setStatusText('Failed to parse AI response. Please try again.')
             }
             
-            // Validate the structure matches expected format
             if (!parsedFeedback.overallScore || !parsedFeedback.ATS) {
-                console.error('Invalid feedback structure:', parsedFeedback)
                 setIsProcessing(false)
                 return setStatusText('Invalid feedback format from AI. Please try again.')
             }
             
             data.feedback = parsedFeedback
-
             await kv.set(`resume:${uuid}`,JSON.stringify(data))
-
             setStatusText('Analysis Complete! Redirecting...')
-
-            console.log('FINAL DATA',data)
+            console.log(data)
             navigate(`/resume/${uuid}`)
         } catch (err) {
-            console.error('Analysis error:', err)
             setIsProcessing(false)
             setStatusText(`Error: ${err instanceof Error ? err.message : 'Unknown error occurred'}`)
         }
