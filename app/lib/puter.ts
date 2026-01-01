@@ -80,6 +80,7 @@ interface PuterStore {
       image: string | File | Blob,
       testMode?: boolean
     ) => Promise<string | undefined>;
+    listModels: (provider?: string) => Promise<any[] | undefined>;
   };
   kv: {
     get: (key: string) => Promise<string | null | undefined>;
@@ -327,6 +328,15 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     >;
   };
 
+  const listModels = async (provider?: string) => {
+    const puter = getPuter();
+    if (!puter) {
+      setError("Puter.js not available");
+      return;
+    }
+    return puter.ai.listModels(provider);
+  };
+
   const feedback = async (path: string, message: string) => {
     const puter = getPuter();
     if (!puter) {
@@ -334,6 +344,8 @@ export const usePuterStore = create<PuterStore>((set, get) => {
       return;
     }
 
+    // Try to use gpt-4o-mini (usually free tier) or fallback to gpt-4
+    // You can also use "fake" for testing without API costs
     return puter.ai.chat(
       [
         {
@@ -350,7 +362,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
           ],
         },
       ],
-      { model: "claude-sonnet-4" }
+      { model: "gpt-4o-mini" }
     ) as Promise<AIResponse | undefined>;
   };
 
@@ -441,6 +453,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
       feedback: (path: string, message: string) => feedback(path, message),
       img2txt: (image: string | File | Blob, testMode?: boolean) =>
         img2txt(image, testMode),
+      listModels: (provider?: string) => listModels(provider),
     },
     kv: {
       get: (key: string) => getKV(key),
